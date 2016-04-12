@@ -319,25 +319,24 @@ static NSString *RKStringDescribingURLResponseWithData(NSURLResponse *response, 
         self.HTTPRequestOperation.successCallbackQueue = [[self class] dispatchQueue];
         self.HTTPRequestOperation.failureCallbackQueue = [[self class] dispatchQueue];
         
-        __weak __typeof(self)weakSelf = self;
         self.stateMachine = [[RKOperationStateMachine alloc] initWithOperation:self dispatchQueue:[[self class] dispatchQueue]];
         [self.stateMachine setExecutionBlock:^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:RKObjectRequestOperationDidStartNotification object:weakSelf];
+            [[NSNotificationCenter defaultCenter] postNotificationName:RKObjectRequestOperationDidStartNotification object:self];
             RKIncrementNetworkActivityIndicator();
-            if (weakSelf.isCancelled) {
-                [weakSelf.stateMachine finish];
+            if (self.isCancelled) {
+                [self.stateMachine finish];
             } else {
-                [weakSelf execute];
+                [self execute];
             }
         }];
         [self.stateMachine setFinalizationBlock:^{
-            [weakSelf willFinish];
+            [self willFinish];
             RKDecrementNetworkAcitivityIndicator();
-            [[NSNotificationCenter defaultCenter] postNotificationName:RKObjectRequestOperationDidFinishNotification object:weakSelf userInfo:@{ RKObjectRequestOperationMappingDidStartUserInfoKey: weakSelf.mappingDidStartDate ?: [NSNull null], RKObjectRequestOperationMappingDidFinishUserInfoKey: weakSelf.mappingDidFinishDate ?: [NSNull null] }];
+            [[NSNotificationCenter defaultCenter] postNotificationName:RKObjectRequestOperationDidFinishNotification object:self userInfo:@{ RKObjectRequestOperationMappingDidStartUserInfoKey: self.mappingDidStartDate ?: [NSNull null], RKObjectRequestOperationMappingDidFinishUserInfoKey: self.mappingDidFinishDate ?: [NSNull null] }];
         }];
         [self.stateMachine setCancellationBlock:^{
-            [weakSelf.HTTPRequestOperation cancel];
-            [weakSelf.responseMapperOperation cancel];
+            [self.HTTPRequestOperation cancel];
+            [self.responseMapperOperation cancel];
         }];
     }
     
